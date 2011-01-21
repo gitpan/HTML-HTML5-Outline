@@ -1,6 +1,10 @@
 package HTML::HTML5::Outline;
 
+use 5.008;
 use common::sense;
+
+use HTML::HTML5::Outline::Outlinee;
+use HTML::HTML5::Outline::Section;
 use HTML::HTML5::Parser;
 use Scalar::Util qw[blessed];
 use XML::LibXML;
@@ -24,7 +28,7 @@ use constant TYPE_DATASET   => 'http://purl.org/dc/dcmitype/Dataset';
 use constant TYPE_IMAGE     => 'http://purl.org/dc/dcmitype/Image';
 use constant TYPE_TEXT      => 'http://purl.org/dc/dcmitype/Text';
 
-our $VERSION = '0.001';
+our $VERSION = '0.002';
 
 sub new
 {
@@ -45,6 +49,7 @@ sub new
 		stack            => [],
 		outlines         => {},
 		page             => \%options,
+		options          => \%options,
 		dom              => $dom,
 		element_subjects => $options{element_subjects},
 	}, $class;
@@ -84,6 +89,56 @@ sub new
 	$self->{primary_outline}  = $self->{outlines}->{$self->{primary_outlinee}};
 	
 	return $self;
+}
+
+sub primary_outlinee { return $_[0]->{primary_outline}; }
+
+sub to_rdf
+{
+	my ($self) = @_;
+	return $self->{model} if defined $self->{model};
+	
+	require RDF::Trine;
+	$self->{model}   = RDF::Trine::Model->temporary_model;
+	
+	my $page_url     = $self->{options}->{uri};
+	my $outline      = $self->primary_outlinee;
+	my $outline_node = $outline->add_to_model($self->{model});
+
+	$self->{model}->add_statement(RDF::Trine::Statement->new(
+		RDF::Trine::Node::Resource->new($page_url),
+		RDF::Trine::Node::Resource->new(REL_IPART),
+		$outline_node,
+		))
+		unless ($outline_node->is_resource and $outline_node->uri eq $page_url);
+	
+	return $self->{model};
+}
+
+sub to_hashref
+{
+	my ($self) = @_;
+
+	unless (defined $self->{hashref})
+	{
+		$self->{hashref} = $self->primary_outlinee->to_hashref;
+	}
+	
+	return $self->{hashref};
+}
+
+sub _mk_outlinee
+{
+	my ($self, %options) = @_;
+	$options{outliner} = $self;
+	return HTML::HTML5::Outline::Outlinee->new(%options);
+}
+
+sub _mk_section
+{
+	my ($self, %options) = @_;
+	$options{outliner} = $self;
+	return HTML::HTML5::Outline::Section->new(%options);
 }
 
 sub tag
@@ -127,25 +182,19 @@ sub tag
 		
 		# Let current section be a newly created section for the current outlinee
 		#     element.
-		$self->{current_section} = {
+		$self->{current_section} = $self->_mk_section(
 			document_order => $self->{count}++,
-			thing    => 'section',
-			header   => undef,
-			parent   => undef,
-			elements => []
-		};
+			);
 		
 		# Let there be a new outline for the new current outlinee, initialized
 		#     with just the new current section as the only section in the
 		#     outline.
-		$self->{outlines}->{ k($self->{current_outlinee}) } = {
+		$self->{outlines}->{ k($self->{current_outlinee}) } = $self->_mk_outlinee(
 			document_order => $self->{count}++,
-			thing    => 'outline',
-			parent   => undef,
 			sections => [$self->{current_section}],
 			element  => $self->{current_outlinee},
 			tagname  => $self->{current_outlinee}->tagName,
-		};
+			);
 	}
 	
 	# When exiting a sectioning content element, if the stack is not empty
@@ -159,7 +208,7 @@ sub tag
 		#     outlinee element.
 		my $ootco = $self->{outlines}->{ k($self->{current_outlinee}) };
 		$self->{current_section} = $ootco->{sections}->[-1]
-			if (defined $ootco->{sections}->[-1]);
+			if defined $ootco->{sections}->[-1];
 			
 		# Append the outline of the sectioning content element being exited to
 		#     the current section. (This does not change which section is the
@@ -232,14 +281,11 @@ sub tag
 		#     current section.
 		elsif (rank_of($node) >= rank_of($self->{outlines}->{ k($self->{current_outlinee}) }->{sections}->[-1]->{header}))
 		{
-			$self->{current_section} = {
+			$self->{current_section} = $self->_mk_section(
 				document_order => $self->{count}++,
-				thing    => 'section',
 				header   => $node,
 				heading  => $self->stringify($node),
-				parent   => undef,
-				elements => []
-			};
+				);
 			push @{ $self->{outlines}->{ k($self->{current_outlinee}) }->{sections} },
 				$self->{current_section};
 		}
@@ -261,14 +307,12 @@ sub tag
 				#     Abort these substeps.
 				if (rank_of($node) < rank_of($candidate->{header}))
 				{
-					$self->{current_section} = {
+					$self->{current_section} = $self->_mk_section(
 						document_order => $self->{count}++,
-						thing    => 'section',
 						header   => $node,
 						heading  => $self->stringify($node),
 						parent   => $candidate,
-						elements => []
-					};
+						);
 					push @{ $candidate->{sections} }, $self->{current_section};
 					last;
 				}
@@ -388,185 +432,34 @@ sub k
 	return $node->nodePath();
 }
 
-sub to_rdf
+sub _add_partlist_to_model
 {
-	my ($self) = @_;
-	return $self->{model} if defined $self->{model};
-	
-	require RDF::Trine;
-	$self->{model}   = RDF::Trine::Model->temporary_model;
-	
-	my $page_url     = $self->{options}->{uri};
-	my $outline      = $self->{primary_outline};
-	my $outline_node = $self->_outline_to_rdf($outline);
-
-	$self->{model}->add_statement(RDF::Trine::Statement->new(
-		RDF::Trine::Node::Resource->new($page_url),
-		RDF::Trine::Node::Resource->new(REL_IPART),
-		$outline_node,
-		))
-		unless ($outline_node->is_resource and $outline_node->uri eq $page_url);
-	
-	return $self->{model};
-}
-
-sub _outline_to_rdf
-{
-	my ($self, $outline) = @_;
-
-	my $rdf_type = TYPE_TEXT;
-	
-	if ($outline->{tagname} eq 'figure'
-	||  $outline->{element}->getAttribute('class') =~ /\bfigure\b/)
-	{
-		$rdf_type = TYPE_IMAGE;
-	}
-	elsif ($outline->{tagname} =~ /^(ul|ol)$/i
-	&&  $outline->{element}->getAttribute('class') =~ /\bxoxo\b/)
-	{
-		$rdf_type = TYPE_DATASET;
-	}
-
-	my $outline_node = $self->_node_for_element($outline->{element});	
-	if ($outline->{element}->tagName =~ /^(body|html)$/i) 
-	{
-		$outline_node = RDF::Trine::Node::Resource->new($self->{options}->{uri});
-	}
-	
-	$outline->{trine_node} = $outline_node;
-	
-	$self->{model}->add_statement(RDF::Trine::Statement->new(
-		$outline_node,
-		RDF::Trine::Node::Resource->new(PROP_TAG),
-		RDF::Trine::Node::Literal->new($outline->{tagname}, undef, NMTOKEN)
-		))
-		unless ($outline->{tagname} =~ /^(body|html)$/i);
-
-	$self->{model}->add_statement(RDF::Trine::Statement->new(
-		$outline_node,
-		RDF::Trine::Node::Resource->new(REL_TYPE),
-		RDF::Trine::Node::Resource->new($rdf_type)
-		));
-	
-	my @partlist;
-	
-	foreach my $section (@{$outline->{sections}})
-	{
-		$self->{model}->add_statement(RDF::Trine::Statement->new(
-			$outline_node,
-			RDF::Trine::Node::Resource->new(REL_PART),
-			$self->_section_to_rdf($section)
-			));
-		push @partlist, $section;
-	}
-
-	$self->_partlist_to_rdf($outline_node, @partlist);
-
-	return $outline_node;
-}
-
-
-sub _section_to_rdf
-{
-	my ($self, $section) = @_;
-
-	my $section_node = RDF::Trine::Node::Blank->new;
-	my $header_node  = $self->_node_for_element($section->{header});
-
-	$section->{trine_node}            = $section_node;
-	$section->{trine_node_for_header} = $header_node;
-
-	$self->{model}->add_statement(RDF::Trine::Statement->new(
-		$section_node,
-		RDF::Trine::Node::Resource->new(PROP_TITLE),
-		RDF::Trine::Node::Literal->new($section->{heading}, $self->_node_lang($section->{header})),
-		));
-
-	$self->{model}->add_statement(RDF::Trine::Statement->new(
-		$section_node,
-		RDF::Trine::Node::Resource->new(REL_TYPE),
-		RDF::Trine::Node::Resource->new(TYPE_TEXT)
-		));
-	
-	$self->{model}->add_statement(RDF::Trine::Statement->new(
-		$section_node,
-		RDF::Trine::Node::Resource->new(REL_HEADING),
-		$header_node
-		));
-		
-	$self->{model}->add_statement(RDF::Trine::Statement->new(
-		$header_node,
-		RDF::Trine::Node::Resource->new(PROP_TAG),
-		RDF::Trine::Node::Literal->new($section->{header}->tagName, undef, NMTOKEN)
-		));
-
-	my @partlist;
-	
-	foreach my $child (@{$section->{sections}})
-	{
-		$self->{model}->add_statement(RDF::Trine::Statement->new(
-			$section_node,
-			RDF::Trine::Node::Resource->new(REL_PART),
-			$self->_section_to_rdf($child)
-			));
-		push @partlist, $child;
-	}
-
-	foreach my $e (@{$section->{elements}})
-	{
-		my $E = k($e);
-		
-		if ($self->{outlines}->{$E})
-		{
-			my $rel = REL_IPART;
-			$rel = REL_ASIDE   if lc $e->tagName eq 'aside';
-			$rel = REL_BQ      if lc $e->tagName eq 'blockquote';
-			$rel = REL_FIGURE  if lc $e->tagName eq 'figure';
-			$rel = REL_SECTION if lc $e->tagName eq 'section';
-			
-			$self->{model}->add_statement(RDF::Trine::Statement->new(
-				$section_node,
-				RDF::Trine::Node::Resource->new($rel),
-				$self->_outline_to_rdf($self->{outlines}->{$E})
-				));
-				
-			push @partlist, $self->{outlines}->{$E};
-		}
-	}
-
-	$self->_partlist_to_rdf($section_node, @partlist);
-
-	return $section_node;
-}
-
-sub _partlist_to_rdf
-{
-	my ($self, $section, @partlist) = @_;
+	my ($self, $section, $model, @partlist) = @_;
 	return if $self->{options}->{suppress_collections};
 	
 	if (!@partlist)
 	{
-		$self->{model}->add_statement(RDF::Trine::Statement->new(
-			$section,
+		$model->add_statement(RDF::Trine::Statement->new(
+			$section->{trine_node},
 			RDF::Trine::Node::Resource->new(REL_PARTLIST),
 			RDF::Trine::Node::Resource->new(RDF_NIL),
 			));
 		return;
 	}
 	
-	my @sorted = reverse sort { $a->{document_order} <=> $b->{document_order} } @partlist;
+	my @sorted = reverse sort { $a->order <=> $b->order } @partlist;
 
 	my $rest = RDF::Trine::Node::Resource->new(RDF_NIL);
 	foreach my $item (@sorted)
 	{
 		my $list = RDF::Trine::Node::Blank->new;
 		
-		$self->{model}->add_statement(RDF::Trine::Statement->new(
+		$model->add_statement(RDF::Trine::Statement->new(
 			$list,
 			RDF::Trine::Node::Resource->new(RDF_FIRST),
 			$item->{trine_node},
 			));
-		$self->{model}->add_statement(RDF::Trine::Statement->new(
+		$model->add_statement(RDF::Trine::Statement->new(
 			$list,
 			RDF::Trine::Node::Resource->new(RDF_REST),
 			$rest,
@@ -575,118 +468,40 @@ sub _partlist_to_rdf
 		$rest = $list;
 	}
 
-	$self->{model}->add_statement(RDF::Trine::Statement->new(
-		$section,
+	$model->add_statement(RDF::Trine::Statement->new(
+		$section->{trine_node},
 		RDF::Trine::Node::Resource->new(REL_PARTLIST),
 		$rest,
 		));
-}
-
-sub to_hashref
-{
-	my ($self) = @_;
-
-	unless (defined $self->{hashref})
-	{
-		$self->{hashref} = $self->_outline_to_hashref($self->{primary_outline});
-	}
-	
-	return $self->{hashref};
-}
-
-sub _outline_to_hashref
-{
-	my ($self, $outline) = @_;
-
-	my $rdf_type = 'Text';
-	
-	if ($outline->{tagname} eq 'figure'
-	||  $outline->{element}->getAttribute('class') =~ /\bfigure\b/)
-	{
-		$rdf_type = 'Image';
-	}
-	elsif ($outline->{tagname} =~ /^(ul|ol)$/i
-	&&  $outline->{element}->getAttribute('class') =~ /\bxoxo\b/)
-	{
-		$rdf_type = 'Dataset';
-	}
-
-	my $outline_node = {
-		class    => 'Outline',
-		type     => $rdf_type,
-		tag      => $outline->{tagname},
-		};
-	
-	foreach my $section (@{$outline->{sections}})
-	{
-		push @{ $outline_node->{sections} }, $self->_section_to_hashref($section)
-	}
-	
-	return $outline_node;
-}
-
-
-sub _section_to_hashref
-{
-	my ($self, $section) = @_;
-
-	my $header_node  = {
-		class      => 'Header',
-		tag        => $section->{header}->tagName,
-		};
-	my $section_node = {
-		class      => 'Section',
-		type       => 'Text',
-		header     => $header_node,
-		title      => $section->{heading},
-		title_lang => $self->_node_lang($section->{header}),
-		};
-
-	$section->{hashref_node}            = $section_node;
-	$section->{hashref_node_for_header} = $header_node;
-
-	foreach my $child (@{$section->{sections}})
-	{
-		push @{ $section_node->{sections} }, $self->_section_to_hashref($child)
-	}
-
-	foreach my $e (@{$section->{elements}})
-	{
-		my $E = k($e);		
-		if ($self->{outlines}->{$E})
-		{
-			push @{ $section_node->{outlines} }, $self->_outline_to_hashref($self->{outlines}->{$E})
-		}
-	}
-
-	return $section_node;
 }
 
 sub _node_for_element
 {
 	my ($self, $element) = @_;
 	
-	unless ($self->{element_subjects}->{$element->nodePath})
+	my $np = $element->nodePath;
+	
+	unless ($self->{element_subjects}{$np})
 	{
-		$self->{element_subjects}->{$element->nodePath} = 
+		$self->{element_subjects}{$np} = 
 			length $element->getAttribute('id')
-				? RDF::Trine::Node::Resource->new($self->{options}->{uri}.'#'.$element->getAttribute('id'))
+				? RDF::Trine::Node::Resource->new($self->{options}{uri}.'#'.$element->getAttribute('id'))
 				: RDF::Trine::Node::Blank->new;
 	}
 	
-	if (!ref $self->{element_subjects}->{$element->nodePath})
+	if (!ref $self->{element_subjects}{$np})
 	{
-		if ($self->{element_subjects}->{$element->nodePath} =~ /^_:(.+)$/)
+		if ($self->{element_subjects}{$np} =~ /^_:(.+)$/)
 		{
-			$self->{element_subjects}->{$element->nodePath} = RDF::Trine::Node::Blank->new($1);
+			$self->{element_subjects}{$np} = RDF::Trine::Node::Blank->new($1);
 		}
 		else
 		{
-			$self->{element_subjects}->{$element->nodePath} = RDF::Trine::Node::Resource->new($self->{element_subjects}->{$element->nodePath});
+			$self->{element_subjects}{$np} = RDF::Trine::Node::Resource->new($self->{element_subjects}{$np});
 		}
 	}
 	
-	return $self->{element_subjects}->{$element->nodePath};
+	return $self->{element_subjects}{$np};
 }
 
 sub _node_lang
@@ -912,6 +727,11 @@ you'll figure out the format pretty easily.
 Returns data as a n L<RDF::Trine::Model>. If RDF::Trine is not installed,
 dies.
 
+=item * C<< primary_outlinee >>
+
+Returns a L<HTML::HTML5::Outline::Outlinee> element representing the
+outline for the page.
+
 =back
 
 =head1 USE WITH RDF::RDFA::PARSER
@@ -964,6 +784,9 @@ Without further ado...
 
 =head1 SEE ALSO
 
+L<HTML::HTML5::Outline::Outlinee>,
+L<HTML::HTML5::Outline::Section>.
+
 L<HTML::HTML5::Parser>, L<HTML::HTML5::Sanity>.
 
 L<RDF::RDFa::Parser>, L<HTML::HTML5::Microdata::Parser>,
@@ -989,10 +812,9 @@ out what was supposed to happen when the HTML5 spec was ambiguous.
 
 =head1 COPYRIGHT AND LICENCE
 
-Copyright (C) 2008-2010 by Toby Inkster
+Copyright (C) 2008-2011 by Toby Inkster
 
 This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself, either Perl version 5.8 or,
-at your option, any later version of Perl 5 you may have available.
+it under the same terms as Perl itself.
 
 =cut

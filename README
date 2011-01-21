@@ -65,6 +65,11 @@ DESCRIPTION
         Returns data as a n RDF::Trine::Model. If RDF::Trine is not
         installed, dies.
 
+    *   "primary_outlinee"
+
+        Returns a HTML::HTML5::Outline::Outlinee element representing the
+        outline for the page.
+
 USE WITH RDF::RDFA::PARSER
     This module produces RDF data where many of the resources described are
     HTML elements. RDFa data typically does not, but RDF::RDFa::Parser does
@@ -113,6 +118,8 @@ USE WITH RDF::RDFA::PARSER
             print rdf_string($combined => 'Turtle', namespaces => $NS);
 
 SEE ALSO
+    HTML::HTML5::Outline::Outlinee, HTML::HTML5::Outline::Section.
+
     HTML::HTML5::Parser, HTML::HTML5::Sanity.
 
     RDF::RDFa::Parser, HTML::HTML5::Microdata::Parser, HTML::Microformats,
@@ -135,9 +142,8 @@ ACKNOWLEDGEMENTS
     out what was supposed to happen when the HTML5 spec was ambiguous.
 
 COPYRIGHT AND LICENCE
-    Copyright (C) 2008-2010 by Toby Inkster
+    Copyright (C) 2008-2011 by Toby Inkster
 
     This library is free software; you can redistribute it and/or modify it
-    under the same terms as Perl itself, either Perl version 5.8 or, at your
-    option, any later version of Perl 5 you may have available.
+    under the same terms as Perl itself.
 

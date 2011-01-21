@@ -24,6 +24,8 @@ inc/Module/Install/WriteAll.pm
 inc/Test/Signature.pm
 
 lib/HTML/HTML5/Outline.pm
+lib/HTML/HTML5/Outline/Outlinee.pm
+lib/HTML/HTML5/Outline/Section.pm
 
 t/00sig.t
 t/01basic.t

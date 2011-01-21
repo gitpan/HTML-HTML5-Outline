@@ -28,13 +28,25 @@ my:v_0-001
 	:file-release   <http://backpan.cpan.org/authors/id/T/TO/TOBYINK/HTML-HTML5-Outline-0.001.tar.gz> ;
 	rdfs:comment    "Original version"@en .
 
+my:v_0-002
+
+	a               :Version ;
+	dc:issued       "2011-01-21"^^xsd:date ;
+	:revision       "0.002"^^xsd:string ;
+	:file-release   <http://backpan.cpan.org/authors/id/T/TO/TOBYINK/HTML-HTML5-Outline-0.002.tar.gz> ;
+	dcs:changeset [
+		dcs:versus my:v_0-001 ;
+		dcs:item   [ rdfs:label "Refactor a lot of code out into separate classes. Add methods to access these classes."@en ] ;
+		dcs:item   [ rdfs:label "Improve to_hashref output."@en ]
+		] .
+
 #############################################################
 
 my:project
 
 	a               :Project ;
 	:name           "HTML-HTML5-Outline" ;
-	:shortdesc      "implementation of the HTML5 Outline algorithm"@en ;
+	:shortdesc      "implementation of the HTML5 outline algorithm"@en ;
 	:programming-language  "Perl" ;
 	:homepage       <http://search.cpan.org/dist/HTML-HTML5-Outline/> ;
 	:download-page  <http://search.cpan.org/dist/HTML-HTML5-Outline/> ;
@@ -46,7 +58,7 @@ my:project
 	:tester         toby:i ;
 	:created        "2010-12-08"^^xsd:date ;
 	:license        <http://dev.perl.org/licenses/> ;
-	:release        my:v_0-001 .
+	:release        my:v_0-001 , my:v_0-002 .
 
 #############################################################
 
