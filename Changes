@@ -10,6 +10,9 @@ Home page:    <http://search.cpan.org/dist/HTML-HTML5-Outline/>
 Bug tracker:  <http://rt.cpan.org/Dist/Display.html?Queue=HTML-HTML5-Outline>
 Maintainer:   Toby Inkster <mailto:tobyink@cpan.org>
 
+0.003 [2011-01-21]
+ - (Bugfix) Documentation fix.
+
 0.002 [2011-01-21]
  - Improve to_hashref output.
  - Refactor a lot of code out into separate classes. Add methods to access

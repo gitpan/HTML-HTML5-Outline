@@ -22,7 +22,7 @@ use constant TYPE_DATASET   => 'http://purl.org/dc/dcmitype/Dataset';
 use constant TYPE_IMAGE     => 'http://purl.org/dc/dcmitype/Image';
 use constant TYPE_TEXT      => 'http://purl.org/dc/dcmitype/Text';
 
-our $VERSION = '0.002';
+our $VERSION = '0.003';
 
 sub new
 {
@@ -137,7 +137,7 @@ __END__
 
 =head1 NAME
 
-HTML::HTML5::Outline::Section - an element with an independent outline
+HTML::HTML5::Outline::Outlinee - an element with an independent outline
 
 =head1 DESCRIPTION
 

@@ -28,7 +28,7 @@ use constant TYPE_DATASET   => 'http://purl.org/dc/dcmitype/Dataset';
 use constant TYPE_IMAGE     => 'http://purl.org/dc/dcmitype/Image';
 use constant TYPE_TEXT      => 'http://purl.org/dc/dcmitype/Text';
 
-our $VERSION = '0.002';
+our $VERSION = '0.003';
 
 sub new
 {

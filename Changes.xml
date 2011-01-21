@@ -1,17 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <rdf:RDF xmlns:dbug="http://ontologi.es/doap-bugs#" xmlns:dc="http://purl.org/dc/terms/" xmlns:dcs="http://ontologi.es/doap-changeset#" xmlns:doap="http://usefulinc.com/ns/doap#" xmlns:foaf="http://xmlns.com/foaf/0.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
-<rdf:Description rdf:nodeID="r9C22F27E24F611E0905FC8BAA3C5A82Ar0">
-	<dcs:item rdf:nodeID="r9C22F27E24F611E0905FC8BAA3C5A82Ar1"/>
-	<dcs:item rdf:nodeID="r9C22F27E24F611E0905FC8BAA3C5A82Ar2"/>
+<rdf:Description rdf:nodeID="r7545B1C425AE11E08BAC9129BF01338Cr0">
+	<dcs:item rdf:nodeID="r7545B1C425AE11E08BAC9129BF01338Cr1"/>
+	<dcs:item rdf:nodeID="r7545B1C425AE11E08BAC9129BF01338Cr2"/>
 	<dcs:versus rdf:resource="http://purl.org/NET/cpan-uri/dist/HTML-HTML5-Outline/v_0-001"/>
 </rdf:Description>
-<rdf:Description rdf:nodeID="r9C22F27E24F611E0905FC8BAA3C5A82Ar1">
+<rdf:Description rdf:nodeID="r7545B1C425AE11E08BAC9129BF01338Cr1">
 	<rdfs:label xml:lang="en">Refactor a lot of code out into separate classes. Add methods to access these classes.</rdfs:label>
 </rdf:Description>
-<rdf:Description rdf:nodeID="r9C22F27E24F611E0905FC8BAA3C5A82Ar2">
+<rdf:Description rdf:nodeID="r7545B1C425AE11E08BAC9129BF01338Cr2">
 	<rdfs:label xml:lang="en">Improve to_hashref output.</rdfs:label>
 </rdf:Description>
-<rdf:Description rdf:nodeID="r9C22F27E24F611E0905FC8BAA3C5A82Ar3">
+<rdf:Description rdf:nodeID="r7545B1C425AE11E08BAC9129BF01338Cr3">
+	<dcs:item rdf:nodeID="r7545B1C425AE11E08BAC9129BF01338Cr4"/>
+	<dcs:versus rdf:resource="http://purl.org/NET/cpan-uri/dist/HTML-HTML5-Outline/v_0-002"/>
+</rdf:Description>
+<rdf:Description rdf:nodeID="r7545B1C425AE11E08BAC9129BF01338Cr4">
+	<rdf:type rdf:resource="http://ontologi.es/doap-changeset#Bugfix"/>
+	<rdfs:label xml:lang="en">Documentation fix.</rdfs:label>
+</rdf:Description>
+<rdf:Description rdf:nodeID="r7545B1C425AE11E08BAC9129BF01338Cr5">
 	<doap:browse rdf:resource="http://goddamn.co.uk/viewvc/perlmods/HTML-HTML5-Outline/"/>
 	<rdf:type rdf:resource="http://usefulinc.com/ns/doap#SVNRepository"/>
 </rdf:Description>
@@ -34,7 +42,8 @@
 	<doap:programming-language>Perl</doap:programming-language>
 	<doap:release rdf:resource="http://purl.org/NET/cpan-uri/dist/HTML-HTML5-Outline/v_0-001"/>
 	<doap:release rdf:resource="http://purl.org/NET/cpan-uri/dist/HTML-HTML5-Outline/v_0-002"/>
-	<doap:repository rdf:nodeID="r9C22F27E24F611E0905FC8BAA3C5A82Ar3"/>
+	<doap:release rdf:resource="http://purl.org/NET/cpan-uri/dist/HTML-HTML5-Outline/v_0-003"/>
+	<doap:repository rdf:nodeID="r7545B1C425AE11E08BAC9129BF01338Cr5"/>
 	<doap:shortdesc xml:lang="en">implementation of the HTML5 outline algorithm</doap:shortdesc>
 	<doap:tester rdf:resource="http://tobyinkster.co.uk/#i"/>
 	<rdf:type rdf:resource="http://usefulinc.com/ns/doap#Project"/>
@@ -47,10 +56,17 @@
 	<rdfs:comment xml:lang="en">Original version</rdfs:comment>
 </rdf:Description>
 <rdf:Description rdf:about="http://purl.org/NET/cpan-uri/dist/HTML-HTML5-Outline/v_0-002">
-	<dcs:changeset rdf:nodeID="r9C22F27E24F611E0905FC8BAA3C5A82Ar0"/>
+	<dcs:changeset rdf:nodeID="r7545B1C425AE11E08BAC9129BF01338Cr0"/>
 	<dc:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2011-01-21</dc:issued>
 	<doap:file-release rdf:resource="http://backpan.cpan.org/authors/id/T/TO/TOBYINK/HTML-HTML5-Outline-0.002.tar.gz"/>
 	<doap:revision rdf:datatype="http://www.w3.org/2001/XMLSchema#string">0.002</doap:revision>
+	<rdf:type rdf:resource="http://usefulinc.com/ns/doap#Version"/>
+</rdf:Description>
+<rdf:Description rdf:about="http://purl.org/NET/cpan-uri/dist/HTML-HTML5-Outline/v_0-003">
+	<dcs:changeset rdf:nodeID="r7545B1C425AE11E08BAC9129BF01338Cr3"/>
+	<dc:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2011-01-21</dc:issued>
+	<doap:file-release rdf:resource="http://backpan.cpan.org/authors/id/T/TO/TOBYINK/HTML-HTML5-Outline-0.003.tar.gz"/>
+	<doap:revision rdf:datatype="http://www.w3.org/2001/XMLSchema#string">0.003</doap:revision>
 	<rdf:type rdf:resource="http://usefulinc.com/ns/doap#Version"/>
 </rdf:Description>
 <rdf:Description xmlns:ns1="http://www.w3.org/2002/07/owl#" rdf:about="http://tobyinkster.co.uk/#i">
