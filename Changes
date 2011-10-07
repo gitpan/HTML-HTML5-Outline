@@ -1,22 +1,28 @@
-############################################################################
-## Changes #################################################################
-############################################################################
-
 HTML-HTML5-Outline
 ==================
 
 Created:      2010-12-08
-Home page:    <http://search.cpan.org/dist/HTML-HTML5-Outline/>
+Home page:    <https://metacpan.org/release/HTML-HTML5-Outline>
 Bug tracker:  <http://rt.cpan.org/Dist/Display.html?Queue=HTML-HTML5-Outline>
 Maintainer:   Toby Inkster <mailto:tobyink@cpan.org>
 
-0.003 [2011-01-21]
- - (Bugfix) Documentation fix.
+0.004  2011-10-07
 
-0.002 [2011-01-21]
+ - Refactor RDF code into a separate file to allow it to be an optional
+   feaure.
+ - (Addition) Lots of test cases.
+ - (Packaging) use Module::Package::RDF
+
+0.003  2011-01-21
+
+ - (Documentation) Documentation fix.
+
+0.002  2011-01-21
+
  - Improve to_hashref output.
  - Refactor a lot of code out into separate classes. Add methods to access
    these classes.
 
-0.001 [2010-12-20]
+0.001  2010-12-20
+
 

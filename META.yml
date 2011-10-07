@@ -1,43 +1,47 @@
 ---
-abstract: 'implementation of the HTML5 Outline algorithm'
+abstract: 'implementation of the HTML5 outline algorithm'
 author:
   - 'Toby Inkster <tobyink@cpan.org>'
 build_requires:
   ExtUtils::MakeMaker: 6.42
-  Module::Signature: 0.66
   Test::More: 0.61
 configure_requires:
   ExtUtils::MakeMaker: 6.42
 distribution_type: module
-generated_by: 'Module::Install version 1.00'
+generated_by: 'Module::Install version 1.02'
 keywords:
+  - Document
   - HTML
   - HTML5
-  - Outline
   - Headings
+  - JSON
+  - Outline
+  - RDF
   - Sections
   - Structure
-  - JSON
-  - RDF
+  - Web
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
   version: 1.4
+module_name: HTML::HTML5::Outline
 name: HTML-HTML5-Outline
 no_index:
   directory:
     - inc
     - t
+    - xt
+recommends:
+  RDF::Trine: 0
 requires:
-  HTML::HTML5::Parser: 0.100
-  RDF::Trine: 0.130
+  Exporter: 0
+  HTML::HTML5::Parser: 0.001
   Scalar::Util: 0
   XML::LibXML: 1.60
-  common::sense: 0
   perl: 5.8.0
 resources:
   bugtracker: http://rt.cpan.org/Dist/Display.html?Queue=HTML-HTML5-Outline
-  homepage: http://search.cpan.org/dist/HTML-HTML5-Outline/
+  homepage: https://metacpan.org/release/HTML-HTML5-Outline
   license: http://dev.perl.org/licenses/
-  repository: http://goddamn.co.uk/viewvc/perlmods/HTML-HTML5-Outline/
-version: 0.003
+  repository: http://goddamn.co.uk/svn-web/perlmods/browse/HTML-HTML5-Outline/
+version: 0.004

@@ -1,34 +1,39 @@
 package HTML::HTML5::Outline;
 
 use 5.008;
-use common::sense;
+use strict;
 
+use Carp qw[];
 use HTML::HTML5::Outline::Outlinee;
 use HTML::HTML5::Outline::Section;
 use HTML::HTML5::Parser;
 use Scalar::Util qw[blessed];
 use XML::LibXML;
 
-use constant NMTOKEN        => 'http://www.w3.org/2001/XMLSchema#NMTOKEN';
-use constant PROP_TITLE     => 'http://purl.org/dc/terms/title';
-use constant PROP_TAG       => 'http://ontologi.es/outline#tag';
-use constant RDF_FIRST      => 'http://www.w3.org/1999/02/22-rdf-syntax-ns#first';
-use constant RDF_REST       => 'http://www.w3.org/1999/02/22-rdf-syntax-ns#rest';
-use constant RDF_NIL        => 'http://www.w3.org/1999/02/22-rdf-syntax-ns#nil';
-use constant REL_ASIDE      => 'http://ontologi.es/outline#aside';
-use constant REL_BQ         => 'http://ontologi.es/outline#blockquote';
-use constant REL_FIGURE     => 'http://ontologi.es/outline#figure';
-use constant REL_HEADING    => 'http://ontologi.es/outline#heading';
-use constant REL_IPART      => 'http://ontologi.es/outline#ipart';
-use constant REL_PART       => 'http://ontologi.es/outline#part';
-use constant REL_PARTLIST   => 'http://ontologi.es/outline#part-list';
-use constant REL_SECTION    => 'http://ontologi.es/outline#section';
-use constant REL_TYPE       => 'http://purl.org/dc/terms/type';
-use constant TYPE_DATASET   => 'http://purl.org/dc/dcmitype/Dataset';
-use constant TYPE_IMAGE     => 'http://purl.org/dc/dcmitype/Image';
-use constant TYPE_TEXT      => 'http://purl.org/dc/dcmitype/Text';
+our $VERSION = '0.004';
 
-our $VERSION = '0.003';
+my $HAS_RDF = undef;
+
+sub import
+{
+	my ($class, %import) = @_;
+	if (exists $import{rdf} and !$import{rdf})
+	{
+		$HAS_RDF = $import{rdf};
+	}
+	else
+	{
+		local $@;
+		$HAS_RDF = eval 'require HTML::HTML5::Outline::RDF; 1' || 0;
+		Carp::croak("RDF support not available: $@\n")
+			if (exists $import{rdf} and $import{rdf} and !$HAS_RDF);
+	}
+}
+
+sub has_rdf
+{
+	return $HAS_RDF;
+}
 
 sub new
 {
@@ -92,28 +97,6 @@ sub new
 }
 
 sub primary_outlinee { return $_[0]->{primary_outline}; }
-
-sub to_rdf
-{
-	my ($self) = @_;
-	return $self->{model} if defined $self->{model};
-	
-	require RDF::Trine;
-	$self->{model}   = RDF::Trine::Model->temporary_model;
-	
-	my $page_url     = $self->{options}->{uri};
-	my $outline      = $self->primary_outlinee;
-	my $outline_node = $outline->add_to_model($self->{model});
-
-	$self->{model}->add_statement(RDF::Trine::Statement->new(
-		RDF::Trine::Node::Resource->new($page_url),
-		RDF::Trine::Node::Resource->new(REL_IPART),
-		$outline_node,
-		))
-		unless ($outline_node->is_resource and $outline_node->uri eq $page_url);
-	
-	return $self->{model};
-}
 
 sub to_hashref
 {
@@ -376,11 +359,11 @@ sub is_sectioning_root
 		{ return 1; }
 
 	# Support for figure microformat
-	elsif ($node->getAttribute('class') =~ /\bfigure\b/ && $self->{options}->{microformats})
+	elsif ($node->hasAttribute('class') && $node->getAttribute('class') =~ /\bfigure\b/ && $self->{options}->{microformats})
 		{ return 1; }
 	
 	# Support for XOXO
-	elsif ($node->tagName =~ /^(ul|li)$/i && $node->getAttribute('class') =~ /\bxoxo\b/ && $self->{options}->{microformats})
+	elsif ($node->tagName =~ /^(ul|li)$/i && $node->hasAttribute('class') && $node->getAttribute('class') =~ /\bxoxo\b/ && $self->{options}->{microformats})
 		{ return 1; }
 
 	return 0;
@@ -430,78 +413,6 @@ sub k
 	my $node = shift;
 	return '/html/body' unless ($node);
 	return $node->nodePath();
-}
-
-sub _add_partlist_to_model
-{
-	my ($self, $section, $model, @partlist) = @_;
-	return if $self->{options}->{suppress_collections};
-	
-	if (!@partlist)
-	{
-		$model->add_statement(RDF::Trine::Statement->new(
-			$section->{trine_node},
-			RDF::Trine::Node::Resource->new(REL_PARTLIST),
-			RDF::Trine::Node::Resource->new(RDF_NIL),
-			));
-		return;
-	}
-	
-	my @sorted = reverse sort { $a->order <=> $b->order } @partlist;
-
-	my $rest = RDF::Trine::Node::Resource->new(RDF_NIL);
-	foreach my $item (@sorted)
-	{
-		my $list = RDF::Trine::Node::Blank->new;
-		
-		$model->add_statement(RDF::Trine::Statement->new(
-			$list,
-			RDF::Trine::Node::Resource->new(RDF_FIRST),
-			$item->{trine_node},
-			));
-		$model->add_statement(RDF::Trine::Statement->new(
-			$list,
-			RDF::Trine::Node::Resource->new(RDF_REST),
-			$rest,
-			));
-		
-		$rest = $list;
-	}
-
-	$model->add_statement(RDF::Trine::Statement->new(
-		$section->{trine_node},
-		RDF::Trine::Node::Resource->new(REL_PARTLIST),
-		$rest,
-		));
-}
-
-sub _node_for_element
-{
-	my ($self, $element) = @_;
-	
-	my $np = $element->nodePath;
-	
-	unless ($self->{element_subjects}{$np})
-	{
-		$self->{element_subjects}{$np} = 
-			length $element->getAttribute('id')
-				? RDF::Trine::Node::Resource->new($self->{options}{uri}.'#'.$element->getAttribute('id'))
-				: RDF::Trine::Node::Blank->new;
-	}
-	
-	if (!ref $self->{element_subjects}{$np})
-	{
-		if ($self->{element_subjects}{$np} =~ /^_:(.+)$/)
-		{
-			$self->{element_subjects}{$np} = RDF::Trine::Node::Blank->new($1);
-		}
-		else
-		{
-			$self->{element_subjects}{$np} = RDF::Trine::Node::Resource->new($self->{element_subjects}{$np});
-		}
-	}
-	
-	return $self->{element_subjects}{$np};
 }
 
 sub _node_lang
@@ -713,7 +624,7 @@ Only really used by the RDF output.
 
 =back
 
-=head2 Methods
+=head2 Object Methods
 
 =over
 
@@ -724,8 +635,8 @@ you'll figure out the format pretty easily.
 
 =item * C<< to_rdf >>
 
-Returns data as a n L<RDF::Trine::Model>. If RDF::Trine is not installed,
-dies.
+Returns data as a n L<RDF::Trine::Model>. Requires RDF::Trine to be
+installed. Otherwise this method won't exist.
 
 =item * C<< primary_outlinee >>
 
@@ -733,6 +644,17 @@ Returns a L<HTML::HTML5::Outline::Outlinee> element representing the
 outline for the page.
 
 =back
+
+=head2 Class Methods
+
+=over
+
+=item * C<< has_rdf >>
+
+Indicates whether the C<< to_rdf >> object method exists.
+
+=back
+
 
 =head1 USE WITH RDF::RDFA::PARSER
 
@@ -784,17 +706,11 @@ Without further ado...
 
 =head1 SEE ALSO
 
+L<HTML::HTML5::Outline::RDF>,
 L<HTML::HTML5::Outline::Outlinee>,
 L<HTML::HTML5::Outline::Section>.
 
 L<HTML::HTML5::Parser>, L<HTML::HTML5::Sanity>.
-
-L<RDF::RDFa::Parser>, L<HTML::HTML5::Microdata::Parser>,
-L<HTML::Microformats>, L<HTML::Embedded::Turtle>.
-
-L<RDF::Trine>, L<RDF::Query>, L<RDF::TrineShortcuts>.
-
-L<http://www.perlrdf.org/>.
 
 =head1 AUTHOR
 

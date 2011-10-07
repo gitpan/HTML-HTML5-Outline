@@ -54,7 +54,7 @@ DESCRIPTION
         *   uri - the document URI for resolving relative URI references.
             Only really used by the RDF output.
 
-  Methods
+  Object Methods
     *   "to_hashref"
 
         Returns data as a nested hashref/arrayref structure. Dump it as JSON
@@ -62,13 +62,18 @@ DESCRIPTION
 
     *   "to_rdf"
 
-        Returns data as a n RDF::Trine::Model. If RDF::Trine is not
-        installed, dies.
+        Returns data as a n RDF::Trine::Model. Requires RDF::Trine to be
+        installed. Otherwise this method won't exist.
 
     *   "primary_outlinee"
 
         Returns a HTML::HTML5::Outline::Outlinee element representing the
         outline for the page.
+
+  Class Methods
+    *   "has_rdf"
+
+        Indicates whether the "to_rdf" object method exists.
 
 USE WITH RDF::RDFA::PARSER
     This module produces RDF data where many of the resources described are
@@ -118,16 +123,10 @@ USE WITH RDF::RDFA::PARSER
             print rdf_string($combined => 'Turtle', namespaces => $NS);
 
 SEE ALSO
-    HTML::HTML5::Outline::Outlinee, HTML::HTML5::Outline::Section.
+    HTML::HTML5::Outline::RDF, HTML::HTML5::Outline::Outlinee,
+    HTML::HTML5::Outline::Section.
 
     HTML::HTML5::Parser, HTML::HTML5::Sanity.
-
-    RDF::RDFa::Parser, HTML::HTML5::Microdata::Parser, HTML::Microformats,
-    HTML::Embedded::Turtle.
-
-    RDF::Trine, RDF::Query, RDF::TrineShortcuts.
-
-    <http://www.perlrdf.org/>.
 
 AUTHOR
     Toby Inkster, <tobyink@cpan.org>
