@@ -57,7 +57,8 @@ my $data = HTML::HTML5::Outline
 	}
 }
 
-use RDF::Trine::Namespace qw[RDF RDFS OWL XSD];
+require RDF::Trine::Namespace;
+RDF::Trine::Namespace->import(qw[RDF RDFS OWL XSD]);
 my $DC   = RDF::Trine::Namespace->new('http://purl.org/dc/terms/');
 my $OL   = RDF::Trine::Namespace->new('http://ontologi.es/outline#');
 my $TYPE = RDF::Trine::Namespace->new('http://purl.org/dc/dcmitype/');

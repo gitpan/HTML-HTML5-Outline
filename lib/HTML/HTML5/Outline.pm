@@ -10,7 +10,7 @@ use HTML::HTML5::Parser;
 use Scalar::Util qw[blessed];
 use XML::LibXML;
 
-our $VERSION = '0.004';
+our $VERSION = '0.005';
 
 my $HAS_RDF = undef;
 
@@ -38,6 +38,8 @@ sub has_rdf
 sub new
 {
 	my ($class, $dom, %options) = @_;
+
+	$options{parser} = 'html' unless defined $options{parser};
 
 	unless (blessed($dom) and $dom->isa('XML::LibXML::Document'))
 	{
