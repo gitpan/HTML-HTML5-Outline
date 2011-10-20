@@ -24,7 +24,7 @@ use constant TYPE_DATASET   => 'http://purl.org/dc/dcmitype/Dataset';
 use constant TYPE_IMAGE     => 'http://purl.org/dc/dcmitype/Image';
 use constant TYPE_TEXT      => 'http://purl.org/dc/dcmitype/Text';
 
-our $VERSION = '0.005';
+our $VERSION = '0.006';
 
 our (@EXPORT, %EXPORT_TAGS, @EXPORT_OK);
 BEGIN

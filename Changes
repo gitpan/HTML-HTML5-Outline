@@ -6,6 +6,10 @@ Home page:    <https://metacpan.org/release/HTML-HTML5-Outline>
 Bug tracker:  <http://rt.cpan.org/Dist/Display.html?Queue=HTML-HTML5-Outline>
 Maintainer:   Toby Inkster <mailto:tobyink@cpan.org>
 
+0.006  2011-10-20
+
+ - Don't 'use' HTML::HTML5::Outline::RDF in 05tripletests.t.
+
 0.005  2011-10-13
 
  - Don't 'use' RDF::Trine::Namespace in 05tripletests.t.
@@ -14,8 +18,8 @@ Maintainer:   Toby Inkster <mailto:tobyink@cpan.org>
 
  - Refactor RDF code into a separate file to allow it to be an optional
    feaure.
- - (Addition) Lots of test cases.
  - (Packaging) use Module::Package::RDF
+ - (Addition) Lots of test cases.
 
 0.003  2011-01-21
 

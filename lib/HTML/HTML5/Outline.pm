@@ -10,7 +10,7 @@ use HTML::HTML5::Parser;
 use Scalar::Util qw[blessed];
 use XML::LibXML;
 
-our $VERSION = '0.005';
+our $VERSION = '0.006';
 
 my $HAS_RDF = undef;
 
@@ -19,7 +19,7 @@ sub import
 	my ($class, %import) = @_;
 	if (exists $import{rdf} and !$import{rdf})
 	{
-		$HAS_RDF = $import{rdf};
+		$HAS_RDF = 0;
 	}
 	else
 	{

@@ -54,12 +54,22 @@ my:v_0-004
 my:project :release my:v_0-005 .
 my:v_0-005
 	a               :Version ;
-        dc:issued	"2011-10-13"^^xsd:date ;
-        :revision       "0.005"^^xsd:string ;
+	dc:issued	    "2011-10-13"^^xsd:date ;
+	:revision       "0.005"^^xsd:string ;
 	:file-release   <http://backpan.cpan.org/authors/id/T/TO/TOBYINK/HTML-HTML5-Outline-0.005.tar.gz> ;
-        dcs:changeset [
-                dcs:versus my:v_0-004 ;
-                dcs:item   [ rdfs:label "Don't 'use' RDF::Trine::Namespace in 05tripletests.t."@en ]
-                ] .
+	dcs:changeset [
+		dcs:versus my:v_0-004 ;
+		dcs:item   [ rdfs:label "Don't 'use' RDF::Trine::Namespace in 05tripletests.t."@en ]
+		] .
 
+my:project :release my:v_0-006 .
+my:v_0-006
+	a               :Version ;
+	dc:issued	    "2011-10-20"^^xsd:date ;
+	:revision       "0.006"^^xsd:string ;
+	:file-release   <http://backpan.cpan.org/authors/id/T/TO/TOBYINK/HTML-HTML5-Outline-0.006.tar.gz> ;
+	dcs:changeset [
+		dcs:versus my:v_0-005 ;
+		dcs:item   [ rdfs:label "Don't 'use' HTML::HTML5::Outline::RDF in 05tripletests.t."@en ]
+		] .
 

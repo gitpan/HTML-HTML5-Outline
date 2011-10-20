@@ -5,7 +5,7 @@ plan skip_all => 'requires RDF::Trine'
 	
 plan tests => 4;
 
-use HTML::HTML5::Outline 0.004 rdf => 1;
+eval 'use HTML::HTML5::Outline 0.004 rdf => 1;';
 use Scalar::Util qw[blessed];
 RDF::Trine->import(qw(iri blank variable literal statement));
 

@@ -3,7 +3,7 @@ package HTML::HTML5::Outline::Section;
 use 5.008;
 use strict;
 
-our $VERSION = '0.005';
+our $VERSION = '0.006';
 
 sub new
 {
